@@ -20,8 +20,9 @@ public class LogEntryController {
     }
 
     @GetMapping("/log")
-    @ResponseBody
-    public List<LogEntry> log() {
-        return logRepository.findAll();
+    public List<LogEntry> log(@RequestParam(required = false) Integer count) {
+        count = (count == null || count <= 0) ? Integer.MAX_VALUE : count;
+        List<LogEntry> logs = logRepository.findAll();
+        return (logs.size() > count) ? logs.subList(logs.size() - count, logs.size()) : logs;
     }
 }

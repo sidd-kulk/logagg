@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,7 +40,6 @@ public class LogEntryControllerTest {
     @Test
     public void testLogEndpoint() throws Exception {
         LogEntry logEntry = new LogEntry("Test log entry");
-        // Set up your logEntry object
 
         mockMvc.perform(post("/log")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,6 +59,29 @@ public class LogEntryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(logEntries)));
+
+        mockMvc.perform(get("/log")
+                        .param("count", "1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        mockMvc.perform(get("/log")
+                        .param("count", "-1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(content().json(asJsonString(logEntries)));
+
+        mockMvc.perform(get("/log")
+                        .param("count", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(content().json(asJsonString(logEntries)));
+
+
+        ;
     }
 
     // Utility method to convert object to JSON string
