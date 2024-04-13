@@ -15,14 +15,11 @@ public class LogEntryController {
 
     @PostMapping("/log")
     public void log(@RequestBody LogEntry logEntry) {
-        System.out.println(logEntry);
         logRepository.save(logEntry);
     }
 
     @GetMapping("/log")
     public List<LogEntry> log(@RequestParam(required = false) Integer count) {
-        count = (count == null || count <= 0) ? Integer.MAX_VALUE : count;
-        List<LogEntry> logs = logRepository.findAll();
-        return (logs.size() > count) ? logs.subList(logs.size() - count, logs.size()) : logs;
+        return (count == null || count <= 0) ? logRepository.findAll() : logRepository.findLimited(count);
     }
 }

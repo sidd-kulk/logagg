@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
@@ -54,34 +55,36 @@ public class LogEntryControllerTest {
         List<LogEntry> logEntries = List.of(new LogEntry("Test log entry 1"), new LogEntry("Test log entry 2"));
 
         when(logRepository.findAll()).thenReturn(logEntries);
+        when(logRepository.findLimited(1)).thenReturn(List.of(logEntries.getFirst()));
+        when(logRepository.findLimited(10)).thenReturn(logEntries);
 
         mockMvc.perform(get("/log")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(logEntries)));
 
-        mockMvc.perform(get("/log")
-                        .param("count", "1")
-                        .contentType(MediaType.APPLICATION_JSON))
+        performGet("1")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
-        mockMvc.perform(get("/log")
-                        .param("count", "-1")
-                        .contentType(MediaType.APPLICATION_JSON))
+        performGet("-1")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(content().json(asJsonString(logEntries)));
 
-        mockMvc.perform(get("/log")
-                        .param("count", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
+        performGet("10")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(content().json(asJsonString(logEntries)));
 
 
         ;
+    }
+
+    private ResultActions performGet(String count) throws Exception {
+        return mockMvc.perform(get("/log")
+                .param("count", count)
+                .contentType(MediaType.APPLICATION_JSON));
     }
 
     // Utility method to convert object to JSON string
